@@ -66,38 +66,41 @@ server, followed by the normal sharding mechanism described above.
 
 ## Example
 ```rust
-use candystore::{Config, Result, CandyStore};
+use candystore::{CandyStore, Config, Result};
 
-let db = CandyStore::open("/tmp/candy-dir", Config::default())?;
+fn main() -> Result<()> {
+    let db = CandyStore::open("/tmp/candy-dir", Config::default())?;
 
-// simple API
+    // simple API
 
-db.insert("mykey", "myval")?;
-assert_eq!(db.get("mykey")?, Some("myval".into()));
+    db.set("mykey", "myval")?;
+    assert_eq!(db.get("mykey")?, Some("myval".into()));
 
-assert_eq!(db.get("yourkey")?, None);
+    assert_eq!(db.get("yourkey")?, None);
 
-assert_eq!(db.iter().count(), 1);
+    assert_eq!(db.iter().count(), 1);
 
-for res in db.iter() {
-    let (k, v) = res?;
-    assert_eq!(k, "mykey".into());
-    assert_eq!(v, "myval".into());
-}
+    for res in db.iter() {
+        let (k, v) = res?;
+        assert_eq!(k, Vec::<u8>::from("mykey"));
+        assert_eq!(v, Vec::<u8>::from("myval"));
+    }
 
-assert_eq!(db.iter().count(), 0);
+    assert_eq!(db.iter().count(), 1);
 
-// lists API
+    // lists API
 
-db.set_in_list("mylist", "key1", "123")?;
-db.set_in_list("mylist", "key2", "456")?;
-assert_eq!(db.get_from_list("mylist", "key1")?, Some("123".into()));
+    db.set_in_list("mylist", "key1", "123")?;
+    db.set_in_list("mylist", "key2", "456")?;
+    assert_eq!(db.get_from_list("mylist", "key1")?, Some("123".into()));
 
-assert_eq!(db.iter_list("mylist").count(), 2);
+    assert_eq!(db.iter_list("mylist").count(), 2);
 
-for res in db.iter_list("mylist") {
-    let (k, v) = res?;
-    println!("{k:?} => {v:?}");
+    for res in db.iter_list("mylist") {
+        let (k, v) = res?;
+        println!("{k:?} => {v:?}");
+    }
+    Ok(())
 }
 ```
 
